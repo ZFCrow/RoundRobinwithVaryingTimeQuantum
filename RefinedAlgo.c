@@ -69,8 +69,10 @@ void dequeue(Queue *queue, Process *process){
     }else{
         Process *temp = queue->frontprocesses;
         Process *prev = NULL; 
+
         while(temp != NULL){
             if(temp->process_id == process->process_id){
+
                 if(prev == NULL){
                     queue->frontprocesses = temp->next;
                 }else{
@@ -117,33 +119,7 @@ void executeProcessFromQueue(Queue *queue, int quantumTime, Queue *finishedQueue
         }
         temp = nextProcess; //update temp to the next process 
     }
-    // //loop through the queue and add the processes to the finished queue if the burst time is equal to 0 and remove it from the ready queue
-    // temp = queue->frontprocesses;
-
-    // while(temp != NULL){
-    //     Process *nexttemp = temp->next; //save the next process 
-    //     if(temp->burst_time == 0){
-
-    //         // if(queue->frontprocesses == temp){
-    //         //     queue->frontprocesses = temp->next;
-    //         // }else{
-    //         //     process *temp2 = queue->frontprocesses;
-    //         //     while(temp2->next != temp){
-    //         //         temp2 = temp2->next;
-    //         //     }
-    //         //     temp2->next = temp->next;
-    //         // }
-    //         // queue->size--;
-
-    //     }
-    //     temp = nexttemp; // this is the process that was saved before the process was removed from the queue
-
-    // }
 }
-
-
-
-
 
 
 void printReadyQueue(Queue *queue,int status){
@@ -193,6 +169,7 @@ void calculateMediumBurstTime(Queue *queue){
 }
 
 
+// sort the whole queue base off the burst time of the processes 
 void sortQueue(Queue *queue){
     if (queue->size <= 1){
         return;
@@ -230,18 +207,9 @@ void sortintoDoubleQueue(Queue *queue, Queue *lightTasksQueue, Queue *heavyTasks
 
 
         //remove the process from the ready queue
-        if(queue->frontprocesses == temp){
-            queue->frontprocesses = temp->next;
-        }else{
-            Process *temp2 = queue->frontprocesses;
-            while(temp2->next != temp){
-                temp2 = temp2->next;
-            }
-            temp2->next = temp->next; // Remove the process from the ready queue
-        }
-        queue->size--;
+        dequeue(queue, temp);
 
-        
+        //add to respective Queue base off medium time
         if(temp->burst_time <= medium_burst_time){
             printf("The process is added to the light tasks queue\n");
             addtoReadyQueue(lightTasksQueue, temp);
@@ -286,6 +254,11 @@ void calculateAverageTime(Queue *queue){
     printf("The average turnaround time is: %f\n", (float)total_turnaround_time/queue->size);
 }
 
+void queueInit (Queue *queue){
+    queue->frontprocesses = NULL;
+    queue->rearprocesses = NULL;
+    queue->size = 0;
+}
 
 int main(){
         //allow user to create the processes with a given arrival time and burst time 
@@ -314,46 +287,54 @@ int main(){
         no_of_processes_added = 0;
         no_of_processes_left = no_of_processes; 
         Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
-        processes[0].arrival_time = 0;
-        processes[0].burst_time = 15;
-        processes[0].process_id = 1;
-        processes[0].next = NULL;
-        processes[1].arrival_time = 0;
-        processes[1].burst_time = 32;
-        processes[1].process_id = 2;
-        processes[1].next = NULL;
-        processes[2].arrival_time = 0;
-        processes[2].burst_time = 10;
-        processes[2].process_id = 3;
-        processes[2].next = NULL;
-        processes[3].arrival_time = 0;
-        processes[3].burst_time = 26;
-        processes[3].process_id = 4;
-        processes[3].next = NULL;
-        processes[4].arrival_time = 0;
-        processes[4].burst_time = 20;
-        processes[4].process_id = 5;
-        processes[4].next = NULL;
         // processes[0].arrival_time = 0;
-        // processes[0].burst_time = 7;
+        // processes[0].burst_time = 15;
         // processes[0].process_id = 1;
-        // processes[1].next = NULL;
-        // processes[1].arrival_time = 4;
-        // processes[1].burst_time = 25;
+        // processes[0].next = NULL;
+        // processes[1].arrival_time = 0;
+        // processes[1].burst_time = 32;
         // processes[1].process_id = 2;
         // processes[1].next = NULL;
-        // processes[2].arrival_time = 10;
-        // processes[2].burst_time = 5;
+        // processes[2].arrival_time = 0;
+        // processes[2].burst_time = 10;
         // processes[2].process_id = 3;
         // processes[2].next = NULL;
-        // processes[3].arrival_time = 15;
-        // processes[3].burst_time = 36;
+        // processes[3].arrival_time = 0;
+        // processes[3].burst_time = 26;
         // processes[3].process_id = 4;
         // processes[3].next = NULL;
-        // processes[4].arrival_time = 17;
-        // processes[4].burst_time = 18;
+        // processes[4].arrival_time = 0;
+        // processes[4].burst_time = 20;
         // processes[4].process_id = 5;
         // processes[4].next = NULL;
+
+
+
+        // processes[5].arrival_time = 30;
+        // processes[5].burst_time = 20;
+        // processes[5].process_id = 6;
+        // processes[5].next = NULL;
+
+        processes[0].arrival_time = 0;
+        processes[0].burst_time = 7;
+        processes[0].process_id = 1;
+        processes[1].next = NULL;
+        processes[1].arrival_time = 4;
+        processes[1].burst_time = 25;
+        processes[1].process_id = 2;
+        processes[1].next = NULL;
+        processes[2].arrival_time = 10;
+        processes[2].burst_time = 5;
+        processes[2].process_id = 3;
+        processes[2].next = NULL;
+        processes[3].arrival_time = 15;
+        processes[3].burst_time = 36;
+        processes[3].process_id = 4;
+        processes[3].next = NULL;
+        processes[4].arrival_time = 17;
+        processes[4].burst_time = 18;
+        processes[4].process_id = 5;
+        processes[4].next = NULL;
         //!
 
 
@@ -365,25 +346,22 @@ int main(){
 
 
         //looks up for currentTime and adds the processes to the ready queue 
+
+        
         Queue *queue = (Queue *)malloc(sizeof(Queue)); 
-        queue->frontprocesses = NULL; 
-        queue->rearprocesses = NULL; 
-        queue->size = 0;
+        queueInit(queue);
 
         //create a finishedqueue to store the processes that have been executed
         Queue *finishedQueue = (Queue *)malloc(sizeof(Queue));
+        queueInit(finishedQueue);
 
         //create the light tasks queue
         Queue *lightTasksQueue = (Queue *)malloc(sizeof(Queue));
-        lightTasksQueue->frontprocesses = NULL;
-        lightTasksQueue->rearprocesses = NULL;
-        lightTasksQueue->size = 0;
+        queueInit(lightTasksQueue);
 
         //create the heavy tasks queue
         Queue *heavyTasksQueue = (Queue *)malloc(sizeof(Queue));
-        heavyTasksQueue->frontprocesses = NULL;
-        heavyTasksQueue->rearprocesses = NULL;
-        heavyTasksQueue->size = 0;
+        queueInit(heavyTasksQueue);
 
         //this whole thing needs to be a loop so i can check for the processes that have arrived at the current time
       //  while (true){
@@ -464,11 +442,11 @@ int main(){
                     
                 }
             }
-            calculateAverageTime(finishedQueue);
+           
 
 
         }
-
+    calculateAverageTime(finishedQueue);
 }
 
 
