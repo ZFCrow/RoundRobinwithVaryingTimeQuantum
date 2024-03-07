@@ -198,6 +198,35 @@ void sortQueue(Queue *queue){
     printf("The sorted queue\n");
     printReadyQueue(queue,1); //if i dont return the queue, the queue is not sorted
 }
+//sort the whole queue base off arrival time of the processes
+void sortQueueArrivalTime(Queue *queue){
+    if (queue->size <= 1){
+        return;
+    }
+
+    Process **pptr = &queue->frontprocesses; // Pointer to the pointer to the first node / memory address of the memory address variable of the first node
+    int swapped;
+    do {
+        swapped = 0;
+        while (*pptr && (*pptr)->next) { // While there are at least two nodes to compare(memory address of the first node and the memory address of the next node)
+            if ((*pptr)->arrival_time > (*pptr)->next->arrival_time) {
+                // Swap nodes
+                Process *temp = *pptr; //memory address of the first node
+                *pptr = (*pptr)->next; //modifying the pointer to point to the next node, so the first node now becomes the second node
+                temp->next = (*pptr)->next; // this original head node now points to the 3rd node in the list
+                (*pptr)->next = temp; // the second node, which became the first node, now points to the original first node
+
+                swapped = 1;
+            }
+            pptr = &(*pptr)->next; 
+        }
+        pptr = &queue->frontprocesses;
+    } while (swapped);
+
+    //print out the sorted queue
+    printf("The sorted queue with Arrival Time\n");
+    printReadyQueue(queue,1); //if i dont return the queue, the queue is not sorted
+}
 
 void sortintoDoubleQueue(Queue *queue, Queue *lightTasksQueue, Queue *heavyTasksQueue){
     Process *temp = queue->frontprocesses;
@@ -287,54 +316,54 @@ int main(){
         no_of_processes_added = 0;
         no_of_processes_left = no_of_processes; 
         Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
-        // processes[0].arrival_time = 0;
-        // processes[0].burst_time = 15;
-        // processes[0].process_id = 1;
-        // processes[0].next = NULL;
-        // processes[1].arrival_time = 0;
-        // processes[1].burst_time = 32;
-        // processes[1].process_id = 2;
-        // processes[1].next = NULL;
-        // processes[2].arrival_time = 0;
-        // processes[2].burst_time = 10;
-        // processes[2].process_id = 3;
-        // processes[2].next = NULL;
-        // processes[3].arrival_time = 0;
-        // processes[3].burst_time = 26;
-        // processes[3].process_id = 4;
-        // processes[3].next = NULL;
-        // processes[4].arrival_time = 0;
-        // processes[4].burst_time = 20;
-        // processes[4].process_id = 5;
-        // processes[4].next = NULL;
+        processes[0].arrival_time = 0;
+        processes[0].burst_time = 15;
+        processes[0].process_id = 1;
+        processes[0].next = NULL;
+        processes[1].arrival_time = 0;
+        processes[1].burst_time = 32;
+        processes[1].process_id = 2;
+        processes[1].next = NULL;
+        processes[2].arrival_time = 0;
+        processes[2].burst_time = 10;
+        processes[2].process_id = 3;
+        processes[2].next = NULL;
+        processes[3].arrival_time = 0;
+        processes[3].burst_time = 26;
+        processes[3].process_id = 4;
+        processes[3].next = NULL;
+        processes[4].arrival_time = 0;
+        processes[4].burst_time = 20;
+        processes[4].process_id = 5;
+        processes[4].next = NULL;
 
 
 
-        // processes[5].arrival_time = 30;
+        // processes[5].arrival_time = 300000;
         // processes[5].burst_time = 20;
         // processes[5].process_id = 6;
         // processes[5].next = NULL;
 
-        processes[0].arrival_time = 0;
-        processes[0].burst_time = 7;
-        processes[0].process_id = 1;
-        processes[1].next = NULL;
-        processes[1].arrival_time = 4;
-        processes[1].burst_time = 25;
-        processes[1].process_id = 2;
-        processes[1].next = NULL;
-        processes[2].arrival_time = 10;
-        processes[2].burst_time = 5;
-        processes[2].process_id = 3;
-        processes[2].next = NULL;
-        processes[3].arrival_time = 15;
-        processes[3].burst_time = 36;
-        processes[3].process_id = 4;
-        processes[3].next = NULL;
-        processes[4].arrival_time = 17;
-        processes[4].burst_time = 18;
-        processes[4].process_id = 5;
-        processes[4].next = NULL;
+        // processes[0].arrival_time = 0;
+        // processes[0].burst_time = 7;
+        // processes[0].process_id = 1;
+        // processes[1].next = NULL;
+        // processes[1].arrival_time = 4;
+        // processes[1].burst_time = 25;
+        // processes[1].process_id = 2;
+        // processes[1].next = NULL;
+        // processes[2].arrival_time = 10;
+        // processes[2].burst_time = 5;
+        // processes[2].process_id = 3;
+        // processes[2].next = NULL;
+        // processes[3].arrival_time = 15;
+        // processes[3].burst_time = 36;
+        // processes[3].process_id = 4;
+        // processes[3].next = NULL;
+        // processes[4].arrival_time = 17;
+        // processes[4].burst_time = 18;
+        // processes[4].process_id = 5;
+        // processes[4].next = NULL;
         //!
 
 
@@ -347,7 +376,11 @@ int main(){
 
         //looks up for currentTime and adds the processes to the ready queue 
 
-        
+        //Arrival Queue
+        Queue *arrivalQueue = (Queue *)malloc(sizeof(Queue));
+        queueInit(arrivalQueue); 
+
+        //readyQueue
         Queue *queue = (Queue *)malloc(sizeof(Queue)); 
         queueInit(queue);
 
@@ -363,32 +396,62 @@ int main(){
         Queue *heavyTasksQueue = (Queue *)malloc(sizeof(Queue));
         queueInit(heavyTasksQueue);
 
+
+        //add all proccesses to the arrival queue
+        for(int i = 0; i < no_of_processes; i++){
+            addtoReadyQueue(arrivalQueue, &processes[i]);
+        }
+        //sort the arrival queue base off the arrival time of the processes
+        sortQueueArrivalTime(arrivalQueue);
+
         //this whole thing needs to be a loop so i can check for the processes that have arrived at the current time
-      //  while (true){
-        while(no_of_processes_left > 0){
-            // if (no_of_processes_left == 0){
-            //     break;
-            // }else {
-            //     printf("theres still processes\n");
-            //     printf("numer of processes: %d\n", no_of_processes_left);
-            //     //sleep(5);
-            // }
+        // while(no_of_processes_left > 0){
+        //     printf("The current time is: %d\n", currentTime);
+        //     for(int i = 0; i < no_of_processes; i++){
 
-
-
+        //         if(processes[i].arrival_time <= currentTime){
+        //             //skip it if the process is already in the finished queue
+        //             if (isProcessInQueue(finishedQueue, processes[i].process_id)){
+        //                 continue;
+        //             }
+        //             printf ("The process with process id %d has arrived\n", processes[i].process_id);
+        //             addtoReadyQueue(queue, &processes[i]); //this is still pointing to the processes array
+        //             printf("The process with process id %d has been added to the ready queue\n", processes[i].process_id);
+        //             no_of_processes_added++;
+        //         }
+        //     }
+        while(arrivalQueue->size > 0){
             printf("The current time is: %d\n", currentTime);
-            for(int i = 0; i < no_of_processes; i++){
+            //loop through the queue, if the first one arrival time is more than the current time, change the current time to the arrival time of the first process
+            //else add the process to the ready queue
+            Process *temp = arrivalQueue->frontprocesses;
+            while(temp != NULL){
+                Process *nextProcess = temp->next;
+                if(temp->arrival_time > currentTime){
 
-                if(processes[i].arrival_time <= currentTime){
-                    //skip it if the process is already in the finished queue
-                    if (isProcessInQueue(finishedQueue, processes[i].process_id)){
-                        continue;
-                    }
-                    printf ("The process with process id %d has arrived\n", processes[i].process_id);
-                    addtoReadyQueue(queue, &processes[i]); //this is still pointing to the processes array
-                    printf("The process with process id %d has been added to the ready queue\n", processes[i].process_id);
-                    no_of_processes_added++;
+                    if (no_of_processes_added == 0){
+                        //first one so i will just modify the current time and then add the process to the ready queue
+                        currentTime = temp->arrival_time;
+                        dequeue(arrivalQueue, temp);
+                        addtoReadyQueue(queue, temp);
+                        no_of_processes_added++;
+                        no_of_processes_left--;
+                        }
+                    else{
+                        // it means something has been added to the ready queue and i reached a process with a higher arrival time
+                        //no need check remaining processes, just break as the rest definitely have a higher arrival time
+                        break;
                 }
+                }
+                else{
+                    //temp is less than or equal to the current time, so add it to the ready queue
+                    dequeue(arrivalQueue, temp);
+                    addtoReadyQueue(queue, temp);
+                    no_of_processes_added++;
+                    no_of_processes_left--;
+                }
+
+                temp = nextProcess;
             }
 
             no_of_processes_left -= no_of_processes_added;
