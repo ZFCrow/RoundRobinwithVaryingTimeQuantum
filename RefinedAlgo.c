@@ -21,9 +21,12 @@
 #include <stdlib.h> 
 #include <stdbool.h>
 #include <unistd.h>
+#include <string.h>
 
 int currentTime; //current ms in the system 
 double medium_burst_time; //medium burst time of the processes in the ready queue 
+int no_of_processes = 0 ;
+
 
 typedef struct process{
     int process_id;
@@ -289,17 +292,70 @@ void queueInit (Queue *queue){
     queue->size = 0;
 }
 
+Process* readProcessesfromCSV(int testcase){
+    //read the processes from a csv file
+    // column names Test Case,Process ID,Arrival Time,Burst Time
+    //read the processes from the csv file base on the testcase Number, populate the number of rows found into the no_of_processes variable 
+    FILE *file = fopen("testcase.csv", "r");
+    //skip the first line
+    char line[1024];
+    fgets(line, 1024, file);
+
+    while (fgets(line, 1024, file) != NULL){
+        char *token;
+        token = strtok(line, ",");
+        int current_testcase = atoi(token);
+        if(current_testcase == testcase){
+            no_of_processes++;
+
+        }
+    }
+    Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
+    //populate the processes array with the processes from the csv file 
+    int i = 0;
+    fseek(file, 0, SEEK_SET);
+    fgets(line, 1024, file);
+    while (fgets(line, 1024, file) != NULL){
+        char *token;
+        token = strtok(line, ",");
+        int current_testcase = atoi(token);
+        if(current_testcase == testcase){
+            token = strtok(NULL, ",") + 1; //remove the P
+            processes[i].process_id = atoi(token);
+            token = strtok(NULL, ",");
+            processes[i].arrival_time = atoi(token);
+            token = strtok(NULL, ",");
+            processes[i].burst_time = atoi(token);
+            i++;
+        }
+    }
+    
+    
+    return processes;
+}
 int main(){
         //allow user to create the processes with a given arrival time and burst time 
 
-        int no_of_processes;
-        int no_of_processes_added;
+        
+        int no_of_processes_added = 0 ;
         int no_of_processes_left;
+
+
+        //!read the processes from the csv file
+        Process *processes = readProcessesfromCSV(5);
+        printf("The number of processes is: %d\n", no_of_processes);
+        for(int i = 0; i < no_of_processes; i++){
+            printf("The process id is: %d\n", processes[i].process_id);
+            printf("The arrival time is: %d\n", processes[i].arrival_time);
+            printf("The burst time is: %d\n", processes[i].burst_time);
+        }
+        no_of_processes_left = no_of_processes; 
+        //!====================================================================
         //!
         // printf("Enter the number of processes: ");
         // scanf("%d", &no_of_processes);
 
-        // process *processes = (process *)malloc(no_of_processes * sizeof(process)); //allocate memory for the processes 
+        // Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes 
 
         // for(int i = 0; i < no_of_processes; i++){
         //     printf("Enter the arrival time for process %d: ", i+1);
@@ -309,33 +365,36 @@ int main(){
         //     processes[i].process_id = i+1;
         // } 
 
+
+        // no_of_processes_left = no_of_processes; 
+
         //!
         //!hardcoded the processes for now , all arrival times are 0, burst time = 15, 32, 10 ,26, 20
         //! prof suggested to put the test data in a file and read from the file
-        no_of_processes = 5;
-        no_of_processes_added = 0;
-        no_of_processes_left = no_of_processes; 
-        Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
-        processes[0].arrival_time = 0;
-        processes[0].burst_time = 15;
-        processes[0].process_id = 1;
-        processes[0].next = NULL;
-        processes[1].arrival_time = 0;
-        processes[1].burst_time = 32;
-        processes[1].process_id = 2;
-        processes[1].next = NULL;
-        processes[2].arrival_time = 0;
-        processes[2].burst_time = 10;
-        processes[2].process_id = 3;
-        processes[2].next = NULL;
-        processes[3].arrival_time = 0;
-        processes[3].burst_time = 26;
-        processes[3].process_id = 4;
-        processes[3].next = NULL;
-        processes[4].arrival_time = 0;
-        processes[4].burst_time = 20;
-        processes[4].process_id = 5;
-        processes[4].next = NULL;
+    //     no_of_processes = 5;
+    //    // no_of_processes_added = 0;
+    //     no_of_processes_left = no_of_processes; 
+    //     Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
+    //     processes[0].arrival_time = 0;
+    //     processes[0].burst_time = 15;
+    //     processes[0].process_id = 1;
+    //     processes[0].next = NULL;
+    //     processes[1].arrival_time = 0;
+    //     processes[1].burst_time = 32;
+    //     processes[1].process_id = 2;
+    //     processes[1].next = NULL;
+    //     processes[2].arrival_time = 0;
+    //     processes[2].burst_time = 10;
+    //     processes[2].process_id = 3;
+    //     processes[2].next = NULL;
+    //     processes[3].arrival_time = 0;
+    //     processes[3].burst_time = 26;
+    //     processes[3].process_id = 4;
+    //     processes[3].next = NULL;
+    //     processes[4].arrival_time = 0;
+    //     processes[4].burst_time = 20;
+    //     processes[4].process_id = 5;
+    //     processes[4].next = NULL;
 
 
 
@@ -404,22 +463,6 @@ int main(){
         //sort the arrival queue base off the arrival time of the processes
         sortQueueArrivalTime(arrivalQueue);
 
-        //this whole thing needs to be a loop so i can check for the processes that have arrived at the current time
-        // while(no_of_processes_left > 0){
-        //     printf("The current time is: %d\n", currentTime);
-        //     for(int i = 0; i < no_of_processes; i++){
-
-        //         if(processes[i].arrival_time <= currentTime){
-        //             //skip it if the process is already in the finished queue
-        //             if (isProcessInQueue(finishedQueue, processes[i].process_id)){
-        //                 continue;
-        //             }
-        //             printf ("The process with process id %d has arrived\n", processes[i].process_id);
-        //             addtoReadyQueue(queue, &processes[i]); //this is still pointing to the processes array
-        //             printf("The process with process id %d has been added to the ready queue\n", processes[i].process_id);
-        //             no_of_processes_added++;
-        //         }
-        //     }
         while(arrivalQueue->size > 0){
             printf("The current time is: %d\n", currentTime);
             //loop through the queue, if the first one arrival time is more than the current time, change the current time to the arrival time of the first process
