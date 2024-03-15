@@ -271,22 +271,25 @@ void calculateAverageTime(Queue *queue){
     Process *temp = queue->frontprocesses;
     int total_waiting_time = 0;
     int total_turnaround_time = 0;
+    float average_waiting_time = 0;
+    float average_turnaround_time = 0; 
+
     while(temp != NULL){
         total_waiting_time += temp->waiting_time;
         total_turnaround_time += temp->turnaround_time;
         temp = temp->next;
     }
 
-    float average_waiting_time = (float)total_waiting_time/queue->size;
-    float average_turnaround_time = (float)total_turnaround_time/queue->size; 
+    average_waiting_time = (float)total_waiting_time/queue->size;
+    average_turnaround_time = (float)total_turnaround_time/queue->size; 
 
     printf("The average waiting time is: %.2f\n", average_waiting_time);
     printf("The average turnaround time is: %.2f\n", average_turnaround_time);
 
     //write it to a excel file, append the data to the file, 
-    // FILE *file = fopen("output.csv", "a");
-    // fprintf(file, "%d,%f,%f\n", testcase, average_waiting_time, average_turnaround_time);
-    // fclose(file);
+    FILE *file = fopen("output.csv", "a");
+    fprintf(file, "%d,%.2f,%.2f\n", testcase, average_waiting_time, average_turnaround_time);
+    fclose(file);
 }
 
 void queueInit (Queue *queue){
@@ -329,120 +332,49 @@ Process* readProcessesfromCSV(int testcase){
             processes[i].arrival_time = atoi(token);
             token = strtok(NULL, ",");
             processes[i].burst_time = atoi(token);
+            
             i++;
         }
+
     }
     
-    
+    fclose(file);
     return processes;
 }
+
 int main(){
+    int no_of_processes_added = 0 ;
+    int no_of_processes_left;
+    Process *processes;
+    while (testcase<=102){
+
+    
         //reset the current time to 0
         currentTime = 0;        
-        int no_of_processes_added = 0 ;
-        int no_of_processes_left;
-        int TestcaseorPromopt;
-        Process *processes;
+        no_of_processes = 0; 
+        no_of_processes_added = 0;
 
-        printf("Enter 1 to read from the csv file or 2 to enter the processes manually: ");
-        scanf("%d", &TestcaseorPromopt); 
-        if (TestcaseorPromopt == 1){
-            //!read the processes from the csv file
-            printf("Please enter the testcase number: ");
-            scanf("%d", &testcase); 
-            processes = readProcessesfromCSV(testcase);
-
-
-
-        }
-        else{
-            printf("Enter the number of processes: ");
-            scanf("%d", &no_of_processes);
-
-            processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes 
-
-            for(int i = 0; i < no_of_processes; i++){
-                printf("Enter the arrival time for process %d: ", i+1);
-                scanf("%d", &processes[i].arrival_time);
-                printf("Enter the burst time for process %d: ", i+1);
-                scanf("%d", &processes[i].burst_time);
-                processes[i].process_id = i+1;
-            } 
-            }
-        no_of_processes_left = no_of_processes; 
-
-        //!====================================================================
-        //!
-
-
-        //!
-        //!hardcoded the processes for now , all arrival times are 0, burst time = 15, 32, 10 ,26, 20
-        //! prof suggested to put the test data in a file and read from the file
-    //     no_of_processes = 5;
-    //    // no_of_processes_added = 0;
-    //     no_of_processes_left = no_of_processes; 
-    //     Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
-    //     processes[0].arrival_time = 0;
-    //     processes[0].burst_time = 15;
-    //     processes[0].process_id = 1;
-    //     processes[0].next = NULL;
-    //     processes[1].arrival_time = 0;
-    //     processes[1].burst_time = 32;
-    //     processes[1].process_id = 2;
-    //     processes[1].next = NULL;
-    //     processes[2].arrival_time = 0;
-    //     processes[2].burst_time = 10;
-    //     processes[2].process_id = 3;
-    //     processes[2].next = NULL;
-    //     processes[3].arrival_time = 0;
-    //     processes[3].burst_time = 26;
-    //     processes[3].process_id = 4;
-    //     processes[3].next = NULL;
-    //     processes[4].arrival_time = 0;
-    //     processes[4].burst_time = 20;
-    //     processes[4].process_id = 5;
-    //     processes[4].next = NULL;
-
-
-
-        // processes[5].arrival_time = 300000;
-        // processes[5].burst_time = 20;
-        // processes[5].process_id = 6;
-        // processes[5].next = NULL;
-
-        // processes[0].arrival_time = 0;
-        // processes[0].burst_time = 7;
-        // processes[0].process_id = 1;
-        // processes[1].next = NULL;
-        // processes[1].arrival_time = 4;
-        // processes[1].burst_time = 25;
-        // processes[1].process_id = 2;
-        // processes[1].next = NULL;
-        // processes[2].arrival_time = 10;
-        // processes[2].burst_time = 5;
-        // processes[2].process_id = 3;
-        // processes[2].next = NULL;
-        // processes[3].arrival_time = 15;
-        // processes[3].burst_time = 36;
-        // processes[3].process_id = 4;
-        // processes[3].next = NULL;
-        // processes[4].arrival_time = 17;
-        // processes[4].burst_time = 18;
-        // processes[4].process_id = 5;
-        // processes[4].next = NULL;
-        //!
-
-
-        // print out the processes and their details in a table
-        printf("Process ID\tArrival Time\tBurst Time\n"); 
+        processes = readProcessesfromCSV(testcase);
+        printf("The number of processes is: %d\n", no_of_processes);
         for(int i = 0; i < no_of_processes; i++){
-            printf("%d\t\t%d\t\t%d\n", processes[i].process_id, processes[i].arrival_time, processes[i].burst_time);
+            printf("The process id is: %d\n", processes[i].process_id);
+            printf("The arrival time is: %d\n", processes[i].arrival_time);
+            printf("The burst time is: %d\n", processes[i].burst_time);
 
             //initialize the waiting time,turnaround, total executed to 0 and next to null
             processes[i].waiting_time = 0;
             processes[i].turnaround_time = 0;
             processes[i].total_executed_time = 0;
             processes[i].next = NULL;
+        }
+
+        no_of_processes_left = no_of_processes; 
+
+
+        // print out the processes and their details in a table
+        printf("Process ID\tArrival Time\tBurst Time\n"); 
+        for(int i = 0; i < no_of_processes; i++){
+            printf("%d\t\t%d\t\t%d\n", processes[i].process_id, processes[i].arrival_time, processes[i].burst_time);
         }
 
 
@@ -566,14 +498,16 @@ int main(){
 
         }
     calculateAverageTime(finishedQueue);
-    //free everything 
-    free(processes);
-    free(arrivalQueue);
-    free(queue);
+    testcase++; 
+    //free 
+    free(arrivalQueue); 
+    free(queue); 
     free(finishedQueue);
     free(lightTasksQueue);
     free(heavyTasksQueue);
-    return 0;
+    free(processes);
+    
+    }
 }
 
 
