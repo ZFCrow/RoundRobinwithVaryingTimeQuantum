@@ -27,6 +27,7 @@ int currentTime; //current ms in the system
 double medium_burst_time; //medium burst time of the processes in the ready queue 
 int no_of_processes = 0 ;
 int testcase = 1; //testcase number 
+int contextSwitches = 0; //number of context switches
 
 typedef struct process{
     int process_id;
@@ -120,6 +121,8 @@ void executeProcessFromQueue(Queue *queue, int quantumTime, Queue *finishedQueue
             temp->total_executed_time += quantumTime; //update the total time the process has been executed
 
         }
+        
+        contextSwitches++; //but this wont check if the process executed is the one from before 
         temp = nextProcess; //update temp to the next process 
     }
 }
@@ -283,6 +286,9 @@ void calculateAverageTime(Queue *queue){
     printf("The average waiting time is: %.2f\n", average_waiting_time);
     printf("The average turnaround time is: %.2f\n", average_turnaround_time);
 
+    //print context switch 
+    printf("The number of context switches is: %d\n", contextSwitches-1); //minus 1 because the last process does not have a context switch 
+    
     //write it to a excel file, append the data to the file, 
     // FILE *file = fopen("output.csv", "a");
     // fprintf(file, "%d,%f,%f\n", testcase, average_waiting_time, average_turnaround_time);
