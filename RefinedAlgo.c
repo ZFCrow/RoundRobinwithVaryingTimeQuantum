@@ -34,6 +34,7 @@ typedef struct process{
     int arrival_time;
     int burst_time;
     int waiting_time;
+    int response_time;
     int turnaround_time; 
     int total_executed_time; //total time the process has been executed 
     struct process *next; 
@@ -99,6 +100,11 @@ void executeProcessFromQueue(Queue *queue, int quantumTime, Queue *finishedQueue
     Process *temp = queue->frontprocesses;
     while(temp != NULL){
         Process *nextProcess = temp->next;
+        //response time check 
+        if(temp->response_time == -1){
+            temp->response_time = currentTime - temp->arrival_time;
+        }
+
         if(temp->burst_time <= quantumTime){
             
             currentTime += temp->burst_time;
@@ -134,7 +140,7 @@ void printReadyQueue(Queue *queue,int status){
         printf("Process ID\tArrival Time\tBurst Time\n");
     }
     else{
-        printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\n");
+        printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tResponse Time\tTurnaround Time\n");
     }
     while(temp != NULL){
         if(status){
@@ -142,7 +148,7 @@ void printReadyQueue(Queue *queue,int status){
         printf("%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time);
         }else{
             //print the waiting time and turnaround time
-            printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time, temp->waiting_time, temp->turnaround_time);
+            printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time, temp->waiting_time, temp->response_time, temp->turnaround_time);
         }
         temp = temp->next;
     }
@@ -274,24 +280,27 @@ void calculateAverageTime(Queue *queue){
     Process *temp = queue->frontprocesses;
     int total_waiting_time = 0;
     int total_turnaround_time = 0;
+    int total_response_time = 0;
     while(temp != NULL){
         total_waiting_time += temp->waiting_time;
         total_turnaround_time += temp->turnaround_time;
+        total_response_time += temp->response_time;
         temp = temp->next;
     }
 
     float average_waiting_time = (float)total_waiting_time/queue->size;
     float average_turnaround_time = (float)total_turnaround_time/queue->size; 
+    float average_response_time = (float)total_response_time/queue->size;
 
     printf("The average waiting time is: %.2f\n", average_waiting_time);
     printf("The average turnaround time is: %.2f\n", average_turnaround_time);
-
+    printf("The average response time is: %.2f\n", average_response_time);
     //print context switch 
     printf("The number of context switches is: %d\n", contextSwitches-1); //minus 1 because the last process does not have a context switch 
-    
+
     //write it to a excel file, append the data to the file, 
     // FILE *file = fopen("output.csv", "a");
-    // fprintf(file, "%d,%f,%f\n", testcase, average_waiting_time, average_turnaround_time);
+    // fprintf(file, "%d,%.2f,%.2f,%.2f,%d\n", testcase, average_waiting_time, average_turnaround_time,average_response_time, contextSwitches-1);
     // fclose(file);
 }
 
@@ -448,6 +457,7 @@ int main(){
             processes[i].waiting_time = 0;
             processes[i].turnaround_time = 0;
             processes[i].total_executed_time = 0;
+            processes[i].response_time = -1;
             processes[i].next = NULL;
         }
 
