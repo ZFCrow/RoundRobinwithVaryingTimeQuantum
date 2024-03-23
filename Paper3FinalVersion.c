@@ -49,7 +49,7 @@ typedef struct queue {
 }Queue; 
 
 
-void addtoReadyQueue(Queue *queue, Process *process){ 
+void addtoQueue(Queue *queue, Process *process){ 
     
     if(queue->size == 0){
         queue->frontprocesses = process;
@@ -112,13 +112,13 @@ void executeProcessFromQueue(Queue *queue, int quantumTime, Queue *finishedQueue
             temp->turnaround_time = currentTime - temp->arrival_time; 
            // temp->waiting_time = temp->turnaround_time - temp->burst_time; //this would be inaccurate if the process is executed more than once, so the waiting time is calculated after the process is executed
             temp->waiting_time = currentTime - temp->arrival_time - temp->total_executed_time;
-            printf("The process with process id %d has been executed\n", temp->process_id);
-            printf("The waiting time for the process is: %d\n", temp->waiting_time);
-            printf("The turnaround time for the process is: %d\n", temp->turnaround_time);
+            //printf("The process with process id %d has been executed\n", temp->process_id);
+            //printf("The waiting time for the process is: %d\n", temp->waiting_time);
+            //printf("The turnaround time for the process is: %d\n", temp->turnaround_time);
             temp -> burst_time = 0;
 
             dequeue(queue, temp);
-            addtoReadyQueue(finishedQueue, temp);
+            addtoQueue(finishedQueue, temp);
             
         }
         else{
@@ -134,22 +134,31 @@ void executeProcessFromQueue(Queue *queue, int quantumTime, Queue *finishedQueue
 }
 
 
-void printReadyQueue(Queue *queue,int status){
-    Process *temp = queue->frontprocesses;
-    if (status){
-        printf("Process ID\tArrival Time\tBurst Time\n");
-    }
-    else{
-        printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tResponse Time\tTurnaround Time\n");
-    }
-    while(temp != NULL){
-        if(status){
+// void printQueue(Queue *queue,int status){
+//     Process *temp = queue->frontprocesses;
+//     if (status){
+//         printf("Process ID\tArrival Time\tBurst Time\n");
+//     }
+//     else{
+//         printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tResponse Time\tTurnaround Time\n");
+//     }
+//     while(temp != NULL){
+//         if(status){
      
-        printf("%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time);
-        }else{
-            //print the waiting time and turnaround time
-            printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time, temp->waiting_time, temp->response_time, temp->turnaround_time);
-        }
+//         printf("%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time);
+//         }else{
+//             //print the waiting time and turnaround time
+//             printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time, temp->waiting_time, temp->response_time, temp->turnaround_time);
+//         }
+//         temp = temp->next;
+//     }
+// }
+
+void printQueue(Queue *queue){
+    printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tResponse Time\tTurnaround Time\n");
+    Process *temp = queue->frontprocesses;
+    while(temp != NULL){
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->total_executed_time, temp->waiting_time, temp->response_time, temp->turnaround_time);
         temp = temp->next;
     }
 }
@@ -167,7 +176,7 @@ void calculateMediumBurstTime(Queue *queue){
         temp = temp->next;
     }
     if(numberofprocesses % 2 == 0){
-        printf("number of processes is even at %d\n", numberofprocesses);
+        //printf("number of processes is even at %d\n", numberofprocesses);
         medium_burst_time = total_burst_time / numberofprocesses;
 
     }else{
@@ -177,7 +186,7 @@ void calculateMediumBurstTime(Queue *queue){
         }
         medium_burst_time = temp->burst_time;
     }
-    printf("The medium burst time is: %f\n", medium_burst_time);
+    //printf("The medium burst time is: %f\n", medium_burst_time);
 }
 
 
@@ -207,8 +216,8 @@ void sortQueue(Queue *queue){
     } while (swapped);
 
     //print out the sorted queue
-    printf("The sorted queue\n");
-    printReadyQueue(queue,1); //if i dont return the queue, the queue is not sorted
+    //printf("The sorted queue\n");
+    //printQueue(queue); //if i dont return the queue, the queue is not sorted
 }
 //sort the whole queue base off arrival time of the processes
 void sortQueueArrivalTime(Queue *queue){
@@ -236,14 +245,14 @@ void sortQueueArrivalTime(Queue *queue){
     } while (swapped);
 
     //print out the sorted queue
-    printf("The sorted queue with Arrival Time\n");
-    printReadyQueue(queue,1); 
+    //printf("The sorted queue with Arrival Time\n");
+    //printQueue(queue); 
 }
 
 void sortintoDoubleQueue(Queue *queue, Queue *lightTasksQueue, Queue *heavyTasksQueue){
     Process *temp = queue->frontprocesses;
     while(temp != NULL){
-        printf("The burst time is: %d\n", temp->burst_time);
+        //printf("The burst time is: %d\n", temp->burst_time);
         Process *nextProcess = temp->next; // Save the next process
 
 
@@ -252,11 +261,11 @@ void sortintoDoubleQueue(Queue *queue, Queue *lightTasksQueue, Queue *heavyTasks
 
         //add to respective Queue base off medium time
         if(temp->burst_time <= medium_burst_time){
-            printf("The process is added to the light tasks queue\n");
-            addtoReadyQueue(lightTasksQueue, temp);
+            //printf("The process is added to the light tasks queue\n");
+            addtoQueue(lightTasksQueue, temp);
         }else{
-            printf("The process is added to the heavy tasks queue\n");
-            addtoReadyQueue(heavyTasksQueue, temp);
+            //printf("The process is added to the heavy tasks queue\n");
+            addtoQueue(heavyTasksQueue, temp);
         }
         temp = nextProcess; // Update temp to the saved next process
     }
@@ -304,11 +313,25 @@ void calculateAverageTime(Queue *queue){
     // fclose(file);
 }
 
+
+//==========================================================
+//Init functions 
+//==========================================================
 void queueInit (Queue *queue){
     queue->frontprocesses = NULL;
     queue->rearprocesses = NULL;
     queue->size = 0;
 }
+
+void processInit(Process *process){
+    process->waiting_time = 0;
+    process->turnaround_time = 0;
+    process->total_executed_time = 0;
+    process->response_time = -1;
+    process->next = NULL;
+}
+//===========================================================
+//=====================================================
 
 Process* readProcessesfromCSV(int testcase){
     //read the processes from a csv file
@@ -329,6 +352,12 @@ Process* readProcessesfromCSV(int testcase){
         }
     }
     Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
+    if (processes == NULL)
+    {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+    
     //populate the processes array with the processes from the csv file 
     int i = 0;
     fseek(file, 0, SEEK_SET);
@@ -351,114 +380,87 @@ Process* readProcessesfromCSV(int testcase){
     
     return processes;
 }
+
+//==========================================================
+//Prompting Functions 
+//==========================================================
+void promptUserForTestCase(){
+    int result; 
+    do {
+        printf("Enter the testcase number: ");
+        result = scanf("%d", &testcase);
+        if (result !=1 ||testcase < 1){
+            printf("Invalid input\n");
+            //clear the buffer
+            while ((getchar()) != '\n');
+        }
+    } while (result != 1||testcase < 1);
+}
+int promptUserForInputMethod(int testCaseorPrompt){
+    do {
+        printf("Enter 1 to read from the csv file or 2 to enter the processes manually: ");
+        scanf("%d", &testCaseorPrompt); 
+        if (testCaseorPrompt != 1 && testCaseorPrompt != 2){
+            printf("Invalid input\n");
+            //clear the buffer
+            while ((getchar()) != '\n');
+        }
+    } while (testCaseorPrompt != 1 && testCaseorPrompt != 2);
+
+    return testCaseorPrompt;
+}
+//==========================================================
+//==========================================================
+
+
 int main(){
         //reset the current time to 0
         currentTime = 0;        
         int no_of_processes_added = 0 ;
         int no_of_processes_left;
-        int TestcaseorPromopt;
+        int testCaseorPrompt;
         Process *processes;
 
-        printf("Enter 1 to read from the csv file or 2 to enter the processes manually: ");
-        scanf("%d", &TestcaseorPromopt); 
-        if (TestcaseorPromopt == 1){
+        testCaseorPrompt = promptUserForInputMethod(testCaseorPrompt); 
+
+        if (testCaseorPrompt == 1){
+            //! prompt user for the Testcase
             //!read the processes from the csv file
-            printf("Please enter the testcase number: ");
-            scanf("%d", &testcase); 
+            promptUserForTestCase();
             processes = readProcessesfromCSV(testcase);
 
-
-
         }
-        else{
+        else
+        {
+            //todo encapsulate this prompt in a function, and do error validations
             printf("Enter the number of processes: ");
             scanf("%d", &no_of_processes);
 
             processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes 
-
+            if (processes == NULL){
+                printf("Memory allocation failed\n");
+                exit(1);
+            }
+            
             for(int i = 0; i < no_of_processes; i++){
                 printf("Enter the arrival time for process %d: ", i+1);
                 scanf("%d", &processes[i].arrival_time);
                 printf("Enter the burst time for process %d: ", i+1);
                 scanf("%d", &processes[i].burst_time);
                 processes[i].process_id = i+1;
-            } 
+                } 
             }
         no_of_processes_left = no_of_processes; 
 
         //!====================================================================
         //!
-
-
-        //!
-        //!hardcoded the processes for now , all arrival times are 0, burst time = 15, 32, 10 ,26, 20
-        //! prof suggested to put the test data in a file and read from the file
-    //     no_of_processes = 5;
-    //    // no_of_processes_added = 0;
-    //     no_of_processes_left = no_of_processes; 
-    //     Process *processes = (Process *)malloc(no_of_processes * sizeof(Process)); //allocate memory for the processes
-    //     processes[0].arrival_time = 0;
-    //     processes[0].burst_time = 15;
-    //     processes[0].process_id = 1;
-    //     processes[0].next = NULL;
-    //     processes[1].arrival_time = 0;
-    //     processes[1].burst_time = 32;
-    //     processes[1].process_id = 2;
-    //     processes[1].next = NULL;
-    //     processes[2].arrival_time = 0;
-    //     processes[2].burst_time = 10;
-    //     processes[2].process_id = 3;
-    //     processes[2].next = NULL;
-    //     processes[3].arrival_time = 0;
-    //     processes[3].burst_time = 26;
-    //     processes[3].process_id = 4;
-    //     processes[3].next = NULL;
-    //     processes[4].arrival_time = 0;
-    //     processes[4].burst_time = 20;
-    //     processes[4].process_id = 5;
-    //     processes[4].next = NULL;
-
-
-
-        // processes[5].arrival_time = 300000;
-        // processes[5].burst_time = 20;
-        // processes[5].process_id = 6;
-        // processes[5].next = NULL;
-
-        // processes[0].arrival_time = 0;
-        // processes[0].burst_time = 7;
-        // processes[0].process_id = 1;
-        // processes[1].next = NULL;
-        // processes[1].arrival_time = 4;
-        // processes[1].burst_time = 25;
-        // processes[1].process_id = 2;
-        // processes[1].next = NULL;
-        // processes[2].arrival_time = 10;
-        // processes[2].burst_time = 5;
-        // processes[2].process_id = 3;
-        // processes[2].next = NULL;
-        // processes[3].arrival_time = 15;
-        // processes[3].burst_time = 36;
-        // processes[3].process_id = 4;
-        // processes[3].next = NULL;
-        // processes[4].arrival_time = 17;
-        // processes[4].burst_time = 18;
-        // processes[4].process_id = 5;
-        // processes[4].next = NULL;
-        //!
-
-
         // print out the processes and their details in a table
         printf("Process ID\tArrival Time\tBurst Time\n"); 
         for(int i = 0; i < no_of_processes; i++){
             printf("%d\t\t%d\t\t%d\n", processes[i].process_id, processes[i].arrival_time, processes[i].burst_time);
 
             //initialize the waiting time,turnaround, total executed to 0 and next to null
-            processes[i].waiting_time = 0;
-            processes[i].turnaround_time = 0;
-            processes[i].total_executed_time = 0;
-            processes[i].response_time = -1;
-            processes[i].next = NULL;
+            processInit(&processes[i]);
         }
 
 
@@ -466,34 +468,54 @@ int main(){
 
         //Arrival Queue
         Queue *arrivalQueue = (Queue *)malloc(sizeof(Queue));
+        if (arrivalQueue == NULL){
+            printf("Memory allocation failed\n");
+            exit(1);
+        }
         queueInit(arrivalQueue); 
 
         //readyQueue
-        Queue *queue = (Queue *)malloc(sizeof(Queue)); 
-        queueInit(queue);
+        Queue *readyQueue = (Queue *)malloc(sizeof(Queue)); 
+        if (readyQueue == NULL){
+            printf("Memory allocation failed\n");
+            exit(1);
+        }
+        queueInit(readyQueue);
 
         //create a finishedqueue to store the processes that have been executed
         Queue *finishedQueue = (Queue *)malloc(sizeof(Queue));
+        if (finishedQueue == NULL){
+            printf("Memory allocation failed\n");
+            exit(1);
+        }
         queueInit(finishedQueue);
 
         //create the light tasks queue
         Queue *lightTasksQueue = (Queue *)malloc(sizeof(Queue));
+        if (lightTasksQueue == NULL){
+            printf("Memory allocation failed\n");
+            exit(1);
+        }
         queueInit(lightTasksQueue);
 
         //create the heavy tasks queue
         Queue *heavyTasksQueue = (Queue *)malloc(sizeof(Queue));
+        if (heavyTasksQueue == NULL){
+            printf("Memory allocation failed\n");
+            exit(1);
+        }
         queueInit(heavyTasksQueue);
 
 
         //add all proccesses to the arrival queue
         for(int i = 0; i < no_of_processes; i++){
-            addtoReadyQueue(arrivalQueue, &processes[i]);
+            addtoQueue(arrivalQueue, &processes[i]);
         }
         //sort the arrival queue base off the arrival time of the processes
         sortQueueArrivalTime(arrivalQueue);
 
         while(arrivalQueue->size > 0){
-            printf("The current time is: %d\n", currentTime);
+            //printf("The current time is: %d\n", currentTime);
             //loop through the queue, if the first one arrival time is more than the current time, change the current time to the arrival time of the first process
             //else add the process to the ready queue
             Process *temp = arrivalQueue->frontprocesses;
@@ -505,7 +527,7 @@ int main(){
                         //first one so i will just modify the current time and then add the process to the ready queue
                         currentTime = temp->arrival_time;
                         dequeue(arrivalQueue, temp);
-                        addtoReadyQueue(queue, temp);
+                        addtoQueue(readyQueue, temp);
                         no_of_processes_added++;
                         no_of_processes_left--;
                         }
@@ -518,7 +540,7 @@ int main(){
                 else{
                     //temp is less than or equal to the current time, so add it to the ready queue
                     dequeue(arrivalQueue, temp);
-                    addtoReadyQueue(queue, temp);
+                    addtoQueue(readyQueue, temp);
                     no_of_processes_added++;
                     no_of_processes_left--;
                 }
@@ -531,18 +553,18 @@ int main(){
 
 
 
-            printf("The ready queue\n");
-            printReadyQueue(queue,1);
+            //printf("The ready queue\n");
+            //printQueue(readyQueue);
 
             // with the ready queue, we can now implement the scheduling algorithm, we separate the processes 
             // into two queues, one for processes with burst time less than the medium burst time (light tasks queue)
             // the other for processes with burst time greater than the medium burst time (heavy tasks queue)
             //sort
-            sortQueue(queue);
-            calculateMediumBurstTime(queue);
+            sortQueue(readyQueue);
+            calculateMediumBurstTime(readyQueue);
 
             //separate the processes into the light and heavy tasks queue, remove it from the ready queue 
-            sortintoDoubleQueue(queue, lightTasksQueue, heavyTasksQueue);
+            sortintoDoubleQueue(readyQueue, lightTasksQueue, heavyTasksQueue);
             int count = 1;
 
             //a loop to execute the processes in the light tasks queue and the heavy tasks queue 
@@ -550,11 +572,11 @@ int main(){
                 if(lightTasksQueue->size > 0){
                     calculateMediumBurstTime(lightTasksQueue);
                     executeProcessFromQueue(lightTasksQueue, medium_burst_time, finishedQueue);
-                    printf("execution %d\n", count);
-                    printf("The finished queue\n");
-                    printReadyQueue(finishedQueue,0);
-                    printf("The light tasks queue\n");
-                    printReadyQueue(lightTasksQueue,0);
+                    //printf("execution %d\n", count);
+                    //printf("The finished queue\n");
+                    //printQueue(finishedQueue);
+                    //printf("The light tasks queue\n");
+                    //printQueue(lightTasksQueue);
                     count++;
                     //if any process is left in the light tasks queue, recalculate the medium burst time and execute the processes in the light tasks queue
                     if(lightTasksQueue->size > 0){
@@ -564,11 +586,11 @@ int main(){
                 else{
                     calculateMediumBurstTime(heavyTasksQueue);
                     executeProcessFromQueue(heavyTasksQueue, medium_burst_time, finishedQueue);
-                    printf("execution %d\n", count);
-                    printf("The finished queue\n");
-                    printReadyQueue(finishedQueue,0);
-                    printf("The heavy tasks queue\n");
-                    printReadyQueue(heavyTasksQueue,0);
+                    //printf("execution %d\n", count);
+                    //printf("The finished queue\n");
+                    //printQueue(finishedQueue);
+                    //printf("The heavy tasks queue\n");
+                    //printQueue(heavyTasksQueue);
                     count++;
                     if (heavyTasksQueue->size > 0)
                     {
@@ -581,11 +603,14 @@ int main(){
 
 
         }
+    
+
+    printQueue(finishedQueue);
     calculateAverageTime(finishedQueue);
     //free everything 
     free(processes);
     free(arrivalQueue);
-    free(queue);
+    free(readyQueue);
     free(finishedQueue);
     free(lightTasksQueue);
     free(heavyTasksQueue);
