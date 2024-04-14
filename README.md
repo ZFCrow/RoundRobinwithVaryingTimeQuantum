@@ -1,7 +1,9 @@
 # Paper
-[Paper 3.pdf](https://github.com/ZFCrow/RoundRobinwithVaryingTimeQuantum/files/14969597/Paper.3.pdf)
+
+[Paper.pdf](https://github.com/ZFCrow/RoundRobinwithVaryingTimeQuantum/files/14969683/Paper.pdf)
 # Acknowledgement 
-This code implementation is based on the enhanced Round Robin scheduling algorithm as presented in [Paper 3.pdf]. The paper introduces an innovative approach that utilizes a dual queue system, improving upon the traditional Round Robin method. The original authors have provided two test cases to benchmark this algorithm against the classic Round Robin algorithm. Alongside these provided cases, I have developed additional test scenarios to conduct a broader comparison with other scheduling algorithms.
+
+This code implementation is based on the enhanced Round Robin scheduling algorithm as presented in [Paper.pdf]. The paper introduces an innovative approach that utilizes a dual queue system, improving upon the traditional Round Robin method. The original authors have provided two test cases to benchmark this algorithm against the classic Round Robin algorithm. Alongside these provided cases, I have developed additional test scenarios to conduct a broader comparison with other scheduling algorithms.
 # Introduction
 
 This algorithm is an improved variant of the traditional Round Robin scheduling method. It improves the standard approach by implementing a dual queue system, which assigns a more suitable time quantum based on the medium burst time requirements of the processes. Unlike Round Robin, where a fixed time quantum may not suit all types of processes with varying burst times, this proposed approach dynamically computes a “medium burst time” which essentially acts as a benchmark to sort the arrived processes into two distinct queues. The Light Task Queue(LTQ) and Heavy Task Queue(HTQ).
