@@ -132,28 +132,6 @@ void executeProcessFromQueue(Queue *queue, int quantumTime, Queue *finishedQueue
         temp = nextProcess; //update temp to the next process 
     }
 }
-
-
-// void printQueue(Queue *queue,int status){
-//     Process *temp = queue->frontprocesses;
-//     if (status){
-//         printf("Process ID\tArrival Time\tBurst Time\n");
-//     }
-//     else{
-//         printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tResponse Time\tTurnaround Time\n");
-//     }
-//     while(temp != NULL){
-//         if(status){
-     
-//         printf("%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time);
-//         }else{
-//             //print the waiting time and turnaround time
-//             printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n", temp->process_id, temp->arrival_time, temp->burst_time, temp->waiting_time, temp->response_time, temp->turnaround_time);
-//         }
-//         temp = temp->next;
-//     }
-// }
-
 void printQueue(Queue *queue){
     printf("Process ID\tArrival Time\tBurst Time\tWaiting Time\tResponse Time\tTurnaround Time\n");
     Process *temp = queue->frontprocesses;
@@ -215,9 +193,6 @@ void sortQueue(Queue *queue){
         pptr = &queue->frontprocesses;
     } while (swapped);
 
-    //print out the sorted queue
-    //printf("The sorted queue\n");
-    //printQueue(queue); //if i dont return the queue, the queue is not sorted
 }
 //sort the whole queue base off arrival time of the processes
 void sortQueueArrivalTime(Queue *queue){
@@ -254,8 +229,6 @@ void sortintoDoubleQueue(Queue *queue, Queue *lightTasksQueue, Queue *heavyTasks
     while(temp != NULL){
         //printf("The burst time is: %d\n", temp->burst_time);
         Process *nextProcess = temp->next; // Save the next process
-
-
         //remove the process from the ready queue
         dequeue(queue, temp);
 
@@ -405,6 +378,17 @@ int promptUserForInputMethod(int testCaseorPrompt){
             //clear the buffer
             while ((getchar()) != '\n');
         }
+        // if 1 and testcase.csv does not exist, prompt the user to enter the processes manually
+        if (testCaseorPrompt == 1){
+            FILE *file = fopen("testcase.csv", "r");
+            if (file == NULL){
+                printf("The file does not exist, please enter the processes manually\n");
+                testCaseorPrompt = 2;
+                break;
+            }
+            //close the file if it exists 
+            fclose(file);
+        }
     } while (testCaseorPrompt != 1 && testCaseorPrompt != 2);
 
     return testCaseorPrompt;
@@ -515,7 +499,6 @@ int main(){
         sortQueueArrivalTime(arrivalQueue);
 
         while(arrivalQueue->size > 0){
-            //printf("The current time is: %d\n", currentTime);
             //loop through the queue, if the first one arrival time is more than the current time, change the current time to the arrival time of the first process
             //else add the process to the ready queue
             Process *temp = arrivalQueue->frontprocesses;
@@ -551,11 +534,6 @@ int main(){
             no_of_processes_left -= no_of_processes_added;
             no_of_processes_added = 0;
 
-
-
-            //printf("The ready queue\n");
-            //printQueue(readyQueue);
-
             // with the ready queue, we can now implement the scheduling algorithm, we separate the processes 
             // into two queues, one for processes with burst time less than the medium burst time (light tasks queue)
             // the other for processes with burst time greater than the medium burst time (heavy tasks queue)
@@ -572,11 +550,6 @@ int main(){
                 if(lightTasksQueue->size > 0){
                     calculateMediumBurstTime(lightTasksQueue);
                     executeProcessFromQueue(lightTasksQueue, medium_burst_time, finishedQueue);
-                    //printf("execution %d\n", count);
-                    //printf("The finished queue\n");
-                    //printQueue(finishedQueue);
-                    //printf("The light tasks queue\n");
-                    //printQueue(lightTasksQueue);
                     count++;
                     //if any process is left in the light tasks queue, recalculate the medium burst time and execute the processes in the light tasks queue
                     if(lightTasksQueue->size > 0){
@@ -586,11 +559,6 @@ int main(){
                 else{
                     calculateMediumBurstTime(heavyTasksQueue);
                     executeProcessFromQueue(heavyTasksQueue, medium_burst_time, finishedQueue);
-                    //printf("execution %d\n", count);
-                    //printf("The finished queue\n");
-                    //printQueue(finishedQueue);
-                    //printf("The heavy tasks queue\n");
-                    //printQueue(heavyTasksQueue);
                     count++;
                     if (heavyTasksQueue->size > 0)
                     {

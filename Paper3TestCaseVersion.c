@@ -362,7 +362,7 @@ int main(){
     int no_of_processes_added = 0 ;
     int no_of_processes_left;
     Process *processes;
-    while (testcase<=9){
+    while (testcase<=100){
 
     
         //reset the current time to 0
